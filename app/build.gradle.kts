@@ -48,4 +48,7 @@ dependencies {
 
     // Add RootBeer dependency in your build.gradle
     implementation(libs.rootbeer.lib)
+
+    implementation(libs.billing)
+
 }

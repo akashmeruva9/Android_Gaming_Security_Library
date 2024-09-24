@@ -13,6 +13,9 @@
         android:theme="@style/Theme.Android_Gaming_Security_Library"
         tools:targetApi="31">
         <activity
+            android:name=".InAppPurchaseProtectionExample"
+            android:exported="false" />
+        <activity
             android:name=".AntiCheatingExample"
             android:exported="true">
             <intent-filter>
