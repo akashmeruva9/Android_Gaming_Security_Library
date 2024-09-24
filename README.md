@@ -1,8 +1,8 @@
 # AndroidArmour
 
 We have include the following 2 Social Media Android app security features in this respository :
-- [Anti-Cheating Mechanisms](#section-1)  - 
-- [Transaction Encryption](#section-2)
+- [Anti-Cheating Mechanisms](#section-1) 
+- [In-App Purchase Protection](#section-2)
 
 # <a name="section-1">
 ## 1.Anti-Cheating Mechanisms :
@@ -115,3 +115,103 @@ fun encryptData(data: String, secretKey: SecretKey): ByteArray {
 </a>
 
 
+# <a name="section-2">
+## 2. In-App Purchase Protection :
+
+### 1. **Use Google Play Billing Library for Purchase Handling**
+
+#### **Step 1: Add Google Play Billing Library**
+   - Add the **Google Play Billing** dependency to your `build.gradle` file.
+
+```groovy
+implementation 'com.android.billingclient:billing:5.0.0'
+```
+
+#### **Step 2: Handle the Purchase in the App**
+
+1. Set up **BillingClient** to handle in-app purchases.
+   
+```kotlin
+private lateinit var billingClient: BillingClient
+
+fun setupBillingClient(context: Context) {
+    billingClient = BillingClient.newBuilder(context)
+        .setListener { billingResult, purchases ->
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
+                for (purchase in purchases) {
+                    handlePurchase(purchase)
+                }
+            }
+        }
+        .enablePendingPurchases()
+        .build()
+    billingClient.startConnection(object : BillingClientStateListener {
+        override fun onBillingSetupFinished(billingResult: BillingResult) {
+            // Ready for purchases
+        }
+
+        override fun onBillingServiceDisconnected() {
+            // Try to reconnect
+        }
+    })
+}
+```
+
+2. When a purchase is made, handle it in the `handlePurchase()` function and pass the purchase token to your server for validation.
+
+```kotlin
+fun handlePurchase(purchase: Purchase) {
+    if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
+        val purchaseToken = purchase.purchaseToken
+        // Send token to your server for validation
+        validatePurchaseOnServer(purchaseToken)
+    }
+}
+```
+
+### 2. **Server-Side Purchase Validation**
+
+#### **Step 1: Set Up a Server**
+   - Create a server using **Node.js**, **Python**, or any preferred backend technology that communicates with **Google Play API** to validate purchases.
+
+#### **Step 2: Validate Purchase with Google Play API**
+
+1. Use Google’s **Play Developer API** to verify the purchase token sent from the app. This ensures the purchase was legitimate.
+
+2. Make a **POST request** from your server to Google Play API to verify the purchase.
+
+Example of a Node.js server-side validation:
+
+```javascript
+const {google} = require('googleapis');
+
+const androidpublisher = google.androidpublisher('v3');
+
+// Authenticate your server using Google API credentials
+async function validatePurchase(packageName, productId, purchaseToken) {
+    const auth = new google.auth.GoogleAuth({
+        scopes: ['https://www.googleapis.com/auth/androidpublisher']
+    });
+    const client = await auth.getClient();
+
+    const res = await androidpublisher.purchases.products.get({
+        auth: client,
+        packageName: packageName,
+        productId: productId,
+        token: purchaseToken,
+    });
+
+    return res.data; // Verify the response
+}
+```
+
+### 3. **Securely Handle Purchase Tokens**
+   - Ensure that **purchase tokens** are sent securely from your Android app to your server using HTTPS.
+   - After server-side validation, deliver the in-app content only if the purchase is verified.
+
+### Steps Summary:
+1. **In-App Purchase (IAP) Handling**: Use Google Play Billing Library to manage purchases and capture purchase tokens.
+2. **Server-Side Validation**: Send purchase tokens to your server and validate using Google Play Developer API.
+3. **Secure Transaction Flow**: Ensure tokens are sent over HTTPS, and validate before delivering any game content.
+
+</a>
