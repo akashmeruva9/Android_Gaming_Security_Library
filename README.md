@@ -1,6 +1,6 @@
 # AndroidArmour
 
-We have include the following 2 Social Media Android app security features in this respository :
+## We have include the following 2 Gaming Android app security features in this respository :
 - [Anti-Cheating Mechanisms](#section-1) 
 - [In-App Purchase Protection](#section-2)
 
